@@ -1,0 +1,51 @@
+import spacy
+from collections import Counter
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
+# Les listes
+matrice_négative = [] # contains all satisfiers find with the negative matrix
+matrice_utopique = [] # contains all satisfiers find with the utopian matrix
+
+# Charger le modèle de langue française de spacy
+nlp = spacy.load("fr_core_news_sm")
+
+def extraire_themes(texte_liste):
+    """Extrait les thèmes récurrents d'une liste de phrases."""
+    themes = []
+    for texte in texte_liste:
+        doc = nlp(texte)
+        for token in doc:
+            if token.pos_ in ("NOUN", "ADJ"):  # On s'intéresse aux noms et adjectifs
+                themes.append(token.lemma_.lower())  # On ajoute le lemme (forme de base) du mot
+    return themes
+
+def creer_wordcloud(themes):
+    """Crée et affiche un wordcloud à partir d'une liste de thèmes."""
+    # On définit une liste de stopwords (mots courants à ignorer)
+    stopwords = ["de", "et", "&", "au", "les", "le", "du", "en", "par", "des", "la", "à", "pour", "tous", "bien", "un", "une","tout"]
+    wordcloud = WordCloud(width=800, height=800,
+                          background_color='white',
+                          stopwords=stopwords,
+                          min_font_size=10,
+                          collocations=False).generate(' '.join(themes))
+    plt.figure(figsize=(8, 8), facecolor=None)
+    plt.imshow(wordcloud)
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.show()
+
+# Extraire les thèmes de chaque liste
+themes_negatifs = extraire_themes(matrice_négative)
+themes_utopiques = extraire_themes(matrice_utopique)
+
+# Afficher les thèmes les plus fréquents
+print("Thèmes négatifs les plus fréquents:")
+print(Counter(themes_negatifs).most_common(10))
+
+print("\nThèmes utopiques les plus fréquents:")
+print(Counter(themes_utopiques).most_common(10))
+
+# Créer et afficher les wordclouds
+creer_wordcloud(themes_negatifs)
+creer_wordcloud(themes_utopiques)
